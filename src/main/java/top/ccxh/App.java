@@ -3,6 +3,7 @@ package top.ccxh;
 import org.activiti.engine.*;
 import org.activiti.engine.form.FormData;
 import org.activiti.engine.form.FormProperty;
+import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
@@ -36,9 +37,11 @@ public class App {
     public void init() {
         //做初始化
         ProcessEngineConfiguration cfg = new StandaloneProcessEngineConfiguration()
-                .setJdbcUrl("jdbc:mysql://localhost:3306/activiti?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false").setJdbcUsername("root")
+                .setJdbcUrl("jdbc:mysql://localhost:3306/weidian_activiti?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false")
+                .setJdbcUsername("root")
                 .setJdbcPassword("root")
-                .setJdbcDriver("com.mysql.cj.jdbc.Driver".trim())
+           //     .setJdbcDriver("com.mysql.cj.jdbc.Driver".trim())
+                .setJdbcDriver("com.mysql.jdbc.Driver".trim())
                 .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
         //获取引擎
         cfg.setActivityFontName("宋体");
@@ -67,7 +70,7 @@ public class App {
     public void addResource(){
         try {
             System.out.println("engine = " + engine);
-            addResource("afl.bpmn");
+            addResource("test.bpmn20.xml");
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -129,4 +132,34 @@ public class App {
         HistoryService historyService = engine.getHistoryService();
         System.out.println("historyService = " + historyService);
     }
+
+    @Test
+    public void test(){
+        Map<String,Object> variables=new HashMap<>();
+        TestService testService = new TestService();
+        variables.put("testService",testService);
+        variables.put("mpAlias","xx");
+        variables.put("namn","c1");
+        variables.put("tradeNumber",100);
+        ProcessDefinition processDefinition = engine.getRepositoryService().createProcessDefinitionQuery().list().get(0);
+        ProcessInstance processInstance = engine.getRuntimeService().startProcessInstanceById(processDefinition.getId(), variables);
+        Map<String,String> form=new HashMap<>();
+
+        //ccxh线同意
+        Task ccxh = engine.getTaskService().createTaskQuery().taskCandidateGroup("ccxh").singleResult();
+
+
+        TaskService taskService = engine.getTaskService();
+        Map<String,Object> variables2=new HashMap<>();
+        variables2.put("t", 100);
+        variables2.put("t1",200);
+        variables2.put("TestService",testService);
+        taskService.complete(ccxh.getId(),variables2);
+    }
+    @Test
+    public void test22(){
+        Task ccxh1 = engine.getTaskService().createTaskQuery().taskCandidateGroup("ccxh1").singleResult();
+        System.out.println("ccxh1 = " + ccxh1);
+    }
+
 }
