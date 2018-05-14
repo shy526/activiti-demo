@@ -7,6 +7,7 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.delegate.DelegateExecution;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
@@ -372,5 +373,28 @@ public class ActivitiHelp {
      */
     public  Map<String, Object>  getTaskVariables(String id){
         return engine.getTaskService().getVariables(id);
+    }
+
+    /**
+     * 流程中止
+     * @param task 任务实例
+     * @param message 中止原因
+     * @return
+     */
+    public void  suspendProcessInstance(Task task,String message){
+        ProcessInstance processInstance = getProcessInstance(task);
+        if (processInstance==null){
+            LOGGER.info("processInstance is voer");
+        }
+        engine.getRuntimeService().deleteProcessInstance(processInstance.getId(),message);
+    }
+
+    /**
+     * 某个流程实例的历史任务流程
+     * @param processInstanceId 流程实例
+     * @return
+     */
+    public List<HistoricTaskInstance> findHisTaskList(String processInstanceId ){
+        return engine.getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).list();
     }
 }
