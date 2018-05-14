@@ -55,6 +55,11 @@ public class TestXTest {
 
     }
 
+    @Test
+    public void  test1(){
+        activitiHelp.startProcessByProcessDefinitionKeyMaxVersion("测试流程",null);
+    }
+
     /**
      * 模拟用户确认订单
      */

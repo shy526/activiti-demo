@@ -1,6 +1,5 @@
 package top.ccxh;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.mysql.jdbc.StringUtils;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
@@ -10,19 +9,13 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
 import org.activiti.engine.repository.Deployment;
-import org.activiti.engine.repository.DeploymentBuilder;
-import org.activiti.engine.repository.DeploymentQuery;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
-import org.apache.ibatis.jdbc.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.Name;
 import java.io.File;
-import java.io.FileFilter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -163,11 +156,11 @@ public class ActivitiHelp {
      */
     public void  addResource(String name)   {
         isNotNull(name);
-        Deployment resource = findResource(name);
+ /*       Deployment resource = findResource(name);
         if (resource!=null){
             LOGGER.debug("deployment.name:{},is exist ",resource.getName());
             return;
-        }
+        }*/
         RepositoryService reService = engine.getRepositoryService();
         Deployment deploy = reService.createDeployment().addClasspathResource(name).name(name).deploy();
         ProcessDefinition processDefinition = reService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
@@ -397,4 +390,19 @@ public class ActivitiHelp {
     public List<HistoricTaskInstance> findHisTaskList(String processInstanceId ){
         return engine.getHistoryService().createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).list();
     }
+
+    /**
+     * 启动 key 中最新版本
+     * @param key
+     * @param variables
+     * @return
+     */
+    public ProcessInstance startProcessByProcessDefinitionKeyMaxVersion(String key , Map<String,Object> variables){
+        List<ProcessDefinition> list1 = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(key).orderByProcessDefinitionVersion().desc().list();
+        if (list1==null||list1.size()<1){
+            throw new NullPointerException("Process not find");
+        }
+        return engine.getRuntimeService().startProcessInstanceById(list1.get(0).getId(), variables);
+    }
+
 }
